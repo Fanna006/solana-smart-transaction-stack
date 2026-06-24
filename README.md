@@ -63,3 +63,4 @@ npm install
 RPC_URL=your_solinfra_rpc_endpoint
 PRIVATE_KEY=[your,wallet,private,key,array]
 
+npm run start
