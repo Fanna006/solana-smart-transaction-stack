@@ -57,3 +57,9 @@ Jito bundles only work if the specific Jito validator scheduled for that slot ac
 ```bash
 git clone [https://github.com/YOUR_GITHUB_USERNAME/solana-smart-transaction-stack.git](https://github.com/YOUR_GITHUB_USERNAME/solana-smart-transaction-stack.git)
 cd solana-smart-transaction-stack
+
+npm install
+
+RPC_URL=your_solinfra_rpc_endpoint
+PRIVATE_KEY=[your,wallet,private,key,array]
+
