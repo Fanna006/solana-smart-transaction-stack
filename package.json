@@ -1,7 +1,7 @@
 {
-  "name": "solana-ai-retry-stack",
+  "name": "solana-smart-stack",
   "version": "1.0.0",
-  "description": "Autonomous Solana Transaction Stack with AI Fault Recovery",
+  "description": "Custom transaction stack for Superteam NG bounty",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
