@@ -1,37 +1,40 @@
 export interface RecoveryInstruction {
     shouldRetry: boolean;
-    action: 'REFRESH_BLOCKHASH_AND_BUMP_TIP' | 'INCREASE_TIP_ONLY' | 'ABORT';
+    action: 'REFRESH_HASH_AND_BUMP' | 'BUMP_FEE_ONLY' | 'ABORT';
     reasoning: string;
-    suggestedTipBumpLamports: number;
+    suggestedTipBump: number;
 }
 
 export class AIAgent {
     public async analyzeFailure(errorString: string, attemptCount: number): Promise<RecoveryInstruction> {
-        console.log(`\n [AI AGENT] Analyzing transaction failure string...`);
+        console.log(`\n[Agent] Looking at the failure...`);
         
         if (attemptCount >= 3) {
             return {
                 shouldRetry: false,
                 action: 'ABORT',
-                reasoning: "Maximum retry threshold reached. Persistent failures indicate severe downstream network issues or insufficient local funds.",
-                suggestedTipBumpLamports: 0
+                reasoning: "Hit the max retries. Either the network is completely cooked or we are out of SOL. Aborting.",
+                suggestedTipBump: 0
             };
         }
 
+        // Checking for expired blockhash or dropped transactions
         if (errorString.includes('BlockhashNotFound') || errorString.includes('expired') || errorString.includes('Simulation failure')) {
             return {
                 shouldRetry: true,
-                action: 'REFRESH_BLOCKHASH_AND_BUMP_TIP',
-                reasoning: "CRITICAL FAULT DETECTED: The transaction failed because the blockhash expired or was not found in the validator queue. This happens when submission lags or a leader skips a block. To recover autonomously, we must grab an entirely fresh blockhash, re-sign the payload, and increase our Jito tip by 20% to gain processing priority in the upcoming slot.",
-                suggestedTipBumpLamports: 15000 
+                action: 'REFRESH_HASH_AND_BUMP',
+                reasoning: "Looks like the blockhash expired or the leader skipped. We can't reuse the same payload. Need to pull a fresh hash and bump the Jito tip by 15k lamports to get prioritized in the next slot.",
+                suggestedTipBump: 15000 
             };
         }
 
+        // If it's just regular congestion
         return {
             shouldRetry: true,
-            action: 'INCREASE_TIP_ONLY',
-            reasoning: "The transaction was likely dropped or outbid in the Jito auction mempool due to sudden network traffic spikes. Suggesting an aggressive tip increase to make our bundle more appealing to the next scheduled leader.",
-            suggestedTipBumpLamports: 10000
+            action: 'BUMP_FEE_ONLY',
+            reasoning: "Probably just got outbid in the mempool. Let's bump the tip by 10k lamports and try again.",
+            suggestedTipBump: 10000
         };
     }
+}
 }
